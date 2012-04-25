@@ -1,0 +1,56 @@
+<html>
+<head>
+<title>WebAudio API</title>
+<script>
+var audioContext;
+var audioBuffer;
+
+window.addEventListener('load', init, false);
+function init() 
+{
+	try 
+	{
+		audioContext = new webkitAudioContext();	
+		loadSound("music.mp3");
+	}	
+	catch(e) {
+		alert(e);
+	}
+}
+function loadSound(url)
+{
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET", url, true);
+	xhr.responseType = "arraybuffer";
+	xhr.onload = function() 
+	{
+		audioContext.decodeAudioData(xhr.response, function(buffer) 
+			{
+				audioBuffer = buffer;
+				playSound();
+			}, function(e){alert(e);}
+		);
+	};
+	xhr.send();
+}
+function playSound()
+{
+	var source = audioContext.createBufferSource();
+	var gainNode = audioContext.createGainNode();
+	var filter = audioContext.createBiquadFilter();
+	source.connect(filter);
+	source.buffer = audioBuffer;
+	
+	filter.connect(gainNode);
+	filter.type = 0; // Low-pass filter. See BiquadFilterNode docs
+	filter.frequency.value = 500; // Set cutoff to 500 HZ
+	
+	gainNode.gain.value = 1.0;
+	gainNode.connect(audioContext.destination);		
+	source.noteOn(0);
+}
+</script>
+</head>
+<body>
+</body>
+</html>
